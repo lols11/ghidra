@@ -36,9 +36,15 @@ OIMM: val						is UI5_VLE [ val = UI5_VLE+1; ] { export *[const]:$(REGISTER_SIZE
 @if REGISTER_SIZE == "4"
 SCALE: val						is BIT_10=1 & SCL_VLE & IMM8 [ val = (0xFFFFFFFF) & ~((0xFF-IMM8) << (SCL_VLE*8)); ] { export *[const]:4 val;}
 SCALE: val						is BIT_10=0 & SCL_VLE & IMM8 [ val = (IMM8 << (SCL_VLE*8));   ] { export *[const]:4 val;}
+# SCALE_U - unsigned variant for comparisons (no sign extension when BIT_10=1)
+SCALE_U: val					is BIT_10=1 & SCL_VLE & IMM8 [ val = IMM8 << (SCL_VLE*8); ] { export *[const]:4 val;}
+SCALE_U: val					is BIT_10=0 & SCL_VLE & IMM8 [ val = IMM8 << (SCL_VLE*8); ] { export *[const]:4 val;}
 @else
 SCALE: val						is BIT_10=1 & SCL_VLE & IMM8 [ val = (0xFFFFFFFFFFFFFFFF) & ~((0xFF-IMM8) << (SCL_VLE*8)); ] { export *[const]:8 val;}
 SCALE: val						is BIT_10=0 & SCL_VLE & IMM8 [ val = IMM8 << (SCL_VLE*8); ] { export *[const]:8 val;}
+# SCALE_U - unsigned variant for comparisons (no sign extension when BIT_10=1)
+SCALE_U: val					is BIT_10=1 & SCL_VLE & IMM8 [ val = IMM8 << (SCL_VLE*8); ] { export *[const]:8 val;}
+SCALE_U: val					is BIT_10=0 & SCL_VLE & IMM8 [ val = IMM8 << (SCL_VLE*8); ] { export *[const]:8 val;}
 @endif
 
 SIMM16: val						is IMM_0_10_VLE & SIMM_21_25_VLE [ val = (SIMM_21_25_VLE << 11) | IMM_0_10_VLE ;] { export *[const]:2 val; }
@@ -577,9 +583,9 @@ IMM16B: val						is IMM_0_10_VLE & IMM_16_20_VLE [ val = (IMM_16_20_VLE << 11) |
 }
 
 
-:e_cmpi BF_VLE,A,SCALE			is $(ISVLE) & OP=6 & XOP_11_VLE=21 & BITS_23_25=0 & A & BF_VLE & SCALE {
+:e_cmpi BF_VLE,A,SCALE_U		is $(ISVLE) & OP=6 & XOP_11_VLE=21 & BITS_23_25=0 & A & BF_VLE & SCALE_U {
 	tmpA:4 = A:4;
-	tmpB:4 = SCALE:4;
+	tmpB:4 = SCALE_U:4;
 	BF_VLE = ((tmpA s< tmpB) << 3) | ((tmpA s> tmpB) << 2) | ((tmpA == tmpB) << 1) | (xer_so & 1);
 }
 
@@ -601,9 +607,9 @@ IMM16B: val						is IMM_0_10_VLE & IMM_16_20_VLE [ val = (IMM_16_20_VLE << 11) |
 	cr0 = ((tmpA < tmpB) << 3) | ((tmpA > tmpB) << 2) | ((tmpA == tmpB) << 1) | (xer_so & 1);	
 }
 
-:e_cmpli BF_VLE,A,SCALE			is $(ISVLE) & OP=6 & XOP_11_VLE=21 & BITS_23_25=1 & A & BF_VLE & SCALE {
+:e_cmpli BF_VLE,A,SCALE_U		is $(ISVLE) & OP=6 & XOP_11_VLE=21 & BITS_23_25=1 & A & BF_VLE & SCALE_U {
 	tmpA:4 = A:4;
-	tmpB:4 = SCALE:4;
+	tmpB:4 = SCALE_U:4;
 	BF_VLE = ((tmpA < tmpB) << 3) | ((tmpA > tmpB) << 2) | ((tmpA == tmpB) << 1) | (xer_so & 1);
 }
 
